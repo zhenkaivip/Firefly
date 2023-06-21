@@ -35,17 +35,18 @@ while True:
     print(all_input)
     model_input_ids = tokenizer(all_input, return_tensors="pt").input_ids
     model_input_ids = model_input_ids.to(device)
-    streamer = TextIteratorStreamer(tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True)
+    streamer = TextIteratorStreamer(tokenizer)
+    # streamer = TextIteratorStreamer(tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True)
     model.generate(
         input_ids=model_input_ids, max_new_tokens=max_new_tokens, do_sample=True, top_p=top_p,
         temperature=temperature, repetition_penalty=repetition_penalty, eos_token_id=tokenizer.eos_token_id,
         streamer=streamer
     )
-    response = ""
+    # response = ""
     for new_text in streamer:
-        print(new_text, end="", flush=True)
-        response += new_text
-    print(response)
+        print(new_text)
+    #     response += new_text
+    # print(response)
     # model_input_ids_len = model_input_ids.size(1)
     # response_ids = outputs[:, model_input_ids_len:]
     # response = tokenizer.batch_decode(response_ids)
