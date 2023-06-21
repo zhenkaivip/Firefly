@@ -24,7 +24,7 @@ model.eval()
 model = model.to(device)
 
 history = []
-history_len = 1
+history_len = 3
 
 while True:
 
