@@ -54,4 +54,4 @@ while True:
     #
     # print("Firefly：" + response)
     # print(history)
-    # user_input = input('User：')
+    user_input = input('User：')
