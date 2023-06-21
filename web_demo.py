@@ -94,7 +94,7 @@ with gr.Blocks() as demo:
             emptyBtn = gr.Button("Clear History")
             max_new_tokens = gr.Slider(0, 1024, value=500, step=1.0, label="Maximum length", interactive=True)
             top_p = gr.Slider(0, 1, value=0.9, step=0.01, label="Top P", interactive=True)
-            temperature = gr.Slider(0, 1.5, value=0.35, step=0.01, label="Temperature",
+            temperature = gr.Slider(0, 1.5, value=1.00, step=0.01, label="Temperature",
                                     interactive=True)
 
     history = gr.State([])
