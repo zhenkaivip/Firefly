@@ -2,6 +2,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 import torch
 from transformers import TextIteratorStreamer
+from threading import Thread
 
 device = 'cuda'
 model_name = 'baichuan-inc/baichuan-7B'
@@ -27,7 +28,7 @@ history_len = 1
 user_input = input('User：')
 while True:
     query = user_input
-    history.append([query, ""])
+    history.append([query, None])
     all_input = '<s>'
     for q, a in history[-history_len - 1:]:
         all_input += f'{q}</s>'
@@ -35,24 +36,48 @@ while True:
     print(all_input)
     model_input_ids = tokenizer(all_input, return_tensors="pt").input_ids
     model_input_ids = model_input_ids.to(device)
-    streamer = TextIteratorStreamer(tokenizer)
+    # streamer = TextIteratorStreamer(tokenizer)
+
+    streamer = TextIteratorStreamer(tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True)
+
+    gen_kwargs = {}
+    gen_kwargs["input_ids"] = model_input_ids
+    gen_kwargs["max_new_tokens"] = max_new_tokens
+    gen_kwargs["do_sample"] = True
+    gen_kwargs["top_p"] = top_p
+    gen_kwargs["temperature"] = temperature
+    gen_kwargs["repetition_penalty"] = repetition_penalty
+    gen_kwargs["eos_token_id"] = tokenizer.eos_token_id
+    gen_kwargs["streamer"] = streamer
+
+    thread = Thread(target=model.generate, kwargs=gen_kwargs)
+    thread.start()
+
     # streamer = TextIteratorStreamer(tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True)
-    model.generate(
-        input_ids=model_input_ids, max_new_tokens=max_new_tokens, do_sample=True, top_p=top_p,
-        temperature=temperature, repetition_penalty=repetition_penalty, eos_token_id=tokenizer.eos_token_id,
-        streamer=streamer
-    )
-    # response = ""
-    for new_text in streamer:
-        print(new_text)
+    # model.generate(
+    #     input_ids=model_input_ids, max_new_tokens=max_new_tokens, do_sample=True, top_p=top_p,
+    #     temperature=temperature, repetition_penalty=repetition_penalty, eos_token_id=tokenizer.eos_token_id,
+    #     streamer=streamer
+    # )
+    # # response = ""
+    # for new_text in streamer:
+    #     print(new_text)
     #     response += new_text
     # print(response)
+
+    response = ""
+    print("Firefly：", end="", flush=True)
+    for new_text in streamer:
+        print(new_text, end="", flush=True)
+        response += new_text
+    print()
+
     # model_input_ids_len = model_input_ids.size(1)
     # response_ids = outputs[:, model_input_ids_len:]
     # response = tokenizer.batch_decode(response_ids)
     # response = response[0][:-4]
-    # history[-1][1] = response
+    history[-1][1] = response
     #
     # print("Firefly：" + response)
-    # print(history)
+    print(history)
     user_input = input('User：')
