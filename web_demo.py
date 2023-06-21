@@ -1,4 +1,4 @@
-import mdtex2html
+# import mdtex2html
 import gradio as gr
 
 from transformers.utils.versions import require_version
@@ -30,59 +30,10 @@ model = model.to(device)
 history_len = 3
 
 
-def postprocess(self, y):
-    r"""
-    Overrides Chatbot.postprocess
-    """
-    if y is None:
-        return []
-    for i, (message, response) in enumerate(y):
-        y[i] = (
-            None if message is None else mdtex2html.convert((message)),
-            None if response is None else mdtex2html.convert(response),
-        )
-    return y
-
-
-gr.Chatbot.postprocess = postprocess
-
-
-def parse_text(text):  # copy from https://github.com/GaiZhenbiao/ChuanhuChatGPT
-    # lines = text.split("\n")
-    # lines = [line for line in lines if line != ""]
-    # count = 0
-    # for i, line in enumerate(lines):
-    #     if "```" in line:
-    #         count += 1
-    #         items = line.split("`")
-    #         if count % 2 == 1:
-    #             lines[i] = "<pre><code class=\"language-{}\">".format(items[-1])
-    #         else:
-    #             lines[i] = "<br /></code></pre>"
-    #     else:
-    #         if i > 0:
-    #             if count % 2 == 1:
-    #                 line = line.replace("`", "\`")
-    #                 line = line.replace("<", "&lt;")
-    #                 line = line.replace(">", "&gt;")
-    #                 line = line.replace(" ", "&nbsp;")
-    #                 line = line.replace("*", "&ast;")
-    #                 line = line.replace("_", "&lowbar;")
-    #                 line = line.replace("-", "&#45;")
-    #                 line = line.replace(".", "&#46;")
-    #                 line = line.replace("!", "&#33;")
-    #                 line = line.replace("(", "&#40;")
-    #                 line = line.replace(")", "&#41;")
-    #                 line = line.replace("$", "&#36;")
-    #             lines[i] = "<br />" + line
-    # text = "".join(lines)
-    return text
-
-
 def predict(query, chatbot, max_new_tokens, top_p, temperature, history):
     print(query)
     print(history)
-    chatbot.append((parse_text(query), ""))
+    chatbot.append((query, ""))
     all_input = '<s>'
     for q, a in history[-history_len:] + [(query, None)]:
         all_input += f'{q}</s>'
@@ -110,7 +61,7 @@ def predict(query, chatbot, max_new_tokens, top_p, temperature, history):
     for new_text in streamer:
         response += new_text
         new_history = history + [(query, response)]
-        chatbot[-1] = (parse_text(query), parse_text(response))
+        chatbot[-1] = (query, response)
         yield chatbot, new_history
 
 
