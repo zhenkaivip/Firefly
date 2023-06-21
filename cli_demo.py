@@ -34,7 +34,6 @@ while True:
         for q, a in history[-history_len - 1:]:
             all_input += f'{q}</s>'
             if a: all_input += f'{a}</s>'
-        print(all_input)
         model_input_ids = tokenizer(all_input, return_tensors="pt").input_ids
         model_input_ids = model_input_ids.to(device)
 
@@ -61,10 +60,8 @@ while True:
         print()
 
         history[-1][1] = response
-        print(history)
         return history
 
 
-    print('=' * 20)
     user_input = input('User：')
     history = predict_and_print(query=user_input, history=history)
