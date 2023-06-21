@@ -29,7 +29,7 @@ history_len = 3
 while True:
 
     def predict_and_print(query, history: list) -> list:
-        history.append((query, None))
+        history.append([query, None])
         all_input = '<s>'
         for q, a in history[-history_len - 1:]:
             all_input += f'{q}</s>'
