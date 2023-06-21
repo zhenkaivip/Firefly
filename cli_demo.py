@@ -29,8 +29,6 @@ while True:
     history.append([query, ""])
     all_input = '<s>'
     for q, a in history[-history_len - 1:]:
-        print(q)
-        print(a)
         all_input += f'{q}</s>'
         if a: all_input += f'{a}</s>'
     print(all_input)
@@ -43,7 +41,6 @@ while True:
     model_input_ids_len = model_input_ids.size(1)
     response_ids = outputs[:, model_input_ids_len:]
     response = tokenizer.batch_decode(response_ids)
-    print(response)
     response = response[0][:-4]
     history[-1][1] = response
 
