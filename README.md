@@ -241,6 +241,7 @@ firefly-bloom-2b6-sft-v2的训练损失的变化趋势如下图所示：
 <img src="pics/train-loss-2b6-v2.png" width="400"> 
 
 ### QLoRA微调
+
 关于QLoRA的详细介绍可参考文章：[【QLoRA实战】使用单卡高效微调bloom-7b1，效果惊艳](https://mp.weixin.qq.com/s/DED7yeiE0DibsVzTmMeDOw)
 
 QLoRA通过4-bit的nf4量化，且加入更多adapter，在大幅减少显存消耗的同时，尽可能逼近全量参数微调的效果。
@@ -250,7 +251,7 @@ QLoRA论文指出，该方法可以在一张V100上对33B的模型进行微调�
 
 💻 执行如下命令即可进行QLoRA微调：
 ```bash
-torchrun --nproc_per_node={num_gpus} train_qlora.py --train_args_file train_args/sft-qlora.json
+torchrun --nproc_per_node={num_gpus} train_qlora.py --train_args_file train_args/baichuan-sft-qlora.json
 ```
 
 📝 train_args/sft-qlora.json中的主要参数说明如下，基本与全量微调的参数一致，几个较为特殊：
@@ -263,6 +264,29 @@ torchrun --nproc_per_node={num_gpus} train_qlora.py --train_args_file train_args
 firefly-bloom-7b1-qlora-sft-v0.1的训练损失的变化趋势如下图所示：
 
 <img src="pics/train-loss-qlora.png" width="400"> 
+
+## FAQ
+#### 问题1：OOM如何解决？
+如果发生OOM，可以缩小per_device_train_batch_size、max_seq_length等参数来缓解。也可以设gradient_checkpointing=true，可以大幅降低显存占用，但训练速度会变慢一些。
+
+#### 问题2：安装包错误
+下面四个python包，建议使用源码安装，后续待其稳定版本了，我们将会在requirements.txt更新版本号
+```bash
+pip install git+https://github.com/huggingface/peft.git
+pip install git+https://github.com/huggingface/accelerate.git
+pip install git+https://github.com/huggingface/transformers.git
+pip install git+https://github.com/TimDettmers/bitsandbytes.git
+```
+
+#### 问题3：是否支持DeepSpeed+QLoRA？
+我们尝试过DeepSpeed+QLoRA的训练策略，但尚未成功，目前建议使用torchrun启动训练。后续若成功，我们将更新代码。
+
+#### 问题4：如何指定使用某些卡训练？
+通过如下方式，即可指定使用0和1号卡进行训练:
+```bash
+CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node={num_gpus} train_qlora.py --train_args_file train_args/baichuan-sft-qlora.json
+```
+
 
 ## 局限性和使用限制
 目前本项目开源的模型均为7B及7B以下，模型参数量较小。所以在效果上可能存在以下问题：
